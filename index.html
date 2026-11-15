@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hindi Voice Studio</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#090d18;color:#fff;
+ font-family:Arial,sans-serif;
+}
+header{
+ padding:22px 18px;background:#111827;
+ border-bottom:1px solid #293449;
+}
+.logo{font-size:23px;font-weight:bold;color:#8b9cff}
+.tag{font-size:12px;color:#9ca3af;margin-top:6px}
+main{max-width:650px;margin:auto;padding:20px 15px}
+.card{
+ background:#141c2b;border:1px solid #293449;
+ padding:18px;border-radius:15px;margin-bottom:18px;
+}
+h2{font-size:21px;margin:0 0 8px}
+p{color:#9ca3af;font-size:13px;line-height:1.6}
+label{display:block;margin:17px 0 8px;font-size:14px}
+textarea{
+ width:100%;height:190px;padding:14px;
+ border-radius:10px;background:#0b1220;
+ color:white;border:1px solid #374151;
+ font-size:15px;resize:vertical;outline:none;
+}
+select,input[type=range]{
+ width:100%;padding:12px;border-radius:9px;
+ background:#0b1220;color:white;border:1px solid #374151;
+}
+input[type=range]{padding:0;accent-color:#818cf8}
+button{
+ width:100%;padding:14px;border:0;border-radius:10px;
+ background:#6366f1;color:white;font-size:15px;
+ font-weight:bold;margin-top:12px;cursor:pointer;
+}
+button.secondary{background:#26344d}
+button:disabled{opacity:.45;cursor:not-allowed}
+.stats{display:flex;justify-content:space-between;
+ color:#9ca3af;font-size:12px;margin-top:9px}
+.status{color:#a5b4fc;font-size:13px;margin-top:12px}
+footer{text-align:center;padding:25px;color:#64748b;font-size:12px}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="logo">🎙 Hindi Voice Studio</div>
+ <div class="tag">AI Documentary Voice Generator</div>
+</header>
+
+<main>
+ <div class="card">
+  <h2>Hindi Deep Voice Generator</h2>
+  <p>अपनी हिंदी स्क्रिप्ट डालें और Voice Preview सुनें।</p>
+
+  <label>अपनी Script लिखें</label>
+  <textarea id="script" placeholder="यहाँ अपनी हिंदी डॉक्यूमेंट्री की पूरी स्क्रिप्ट लिखें..."></textarea>
+
+  <div class="stats">
+   <span id="count">0 Characters</span>
+   <span>Hindi Language</span>
+  </div>
+
+  <label>Voice Style</label>
+  <select id="voiceStyle">
+   <option value="deep">Deep Male Documentary Voice</option>
+   <option value="normal">Natural Hindi Voice</option>
+  </select>
+
+  <label>Voice Speed: <span id="speedValue">0.90x</span></label>
+  <input id="speed" type="range" min="0.6" max="1.3" step="0.05" value="0.9">
+
+  <label>Voice Pitch: <span id="pitchValue">0.80</span></label>
+  <input id="pitch" type="range" min="0.5" max="1.5" step="0.1" value="0.8">
+
+  <button class="secondary" id="preview">▶ Preview Voice</button>
+  <button id="stop">■ Stop Voice</button>
+  <button id="generate" disabled>Generate AI Voice (Coming Soon)</button>
+
+  <div class="status" id="status">
+   Browser voice preview तैयार है। AI engine अभी connect नहीं हुआ है।
+  </div>
+ </div>
+
+ <div class="card">
+  <h2>Audio Settings</h2>
+  <p>AI voice engine जुड़ने के बाद यहाँ MP3 generation और download उपलब्ध होंगे।</p>
+  <button disabled>⬇ Download MP3</button>
+ </div>
+</main>
+
+<footer>
+ Hindi Voice Studio © 2026<br>
+ Made for Documentary Creators
+</footer>
+
+<script>
+const script = document.getElementById("script");
+const count = document.getElementById("count");
+const speed = document.getElementById("speed");
+const pitch = document.getElementById("pitch");
+const status = document.getElementById("status");
+
+script.addEventListener("input",()=>{
+ count.textContent = script.value.length + " Characters";
+});
+
+speed.addEventListener("input",()=>{
+ document.getElementById("speedValue").textContent =
+ Number(speed.value).toFixed(2)+"x";
+});
+
+pitch.addEventListener("input",()=>{
+ document.getElementById("pitchValue").textContent =
+ Number(pitch.value).toFixed(2);
+});
+
+document.getElementById("preview").onclick=()=>{
+ if(!script.value.trim()){
+  status.textContent="पहले अपनी Script लिखें।";
+  return;
+ }
+
+ if(!("speechSynthesis" in window)){
+  status.textContent="आपका Browser Voice Preview support नहीं करता।";
+  return;
+ }
+
+ speechSynthesis.cancel();
+
+ const msg = new SpeechSynthesisUtterance(script.value);
+ msg.lang="hi-IN";
+ msg.rate=Number(speed.value);
+ msg.pitch=Number(pitch.value);
+
+ const voices=speechSynthesis.getVoices();
+ const hindiVoice=voices.find(v=>v.lang.toLowerCase().startsWith("hi"));
+
+ if(hindiVoice) msg.voice=hindiVoice;
+
+ msg.onstart=()=>status.textContent="Voice Preview चल रहा है...";
+ msg.onend=()=>status.textContent="Preview पूरा हुआ।";
+ msg.onerror=()=>status.textContent="Voice Preview उपलब्ध नहीं है।";
+
+ speechSynthesis.speak(msg);
+};
+
+document.getElementById("stop").onclick=()=>{
+ speechSynthesis.cancel();
+ status.textContent="Voice रोक दिया गया।";
+};
+</script>
+
+</body>
+</html>
